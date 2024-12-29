@@ -77,14 +77,37 @@
             background: #d32f2f; /* Vermelho escuro */
         }
 
-        button {
+        /* Botão "Compra" verde */
+        .purchase-button {
             background: #4CAF50; /* Verde */
             color: #fff;
             cursor: pointer;
         }
 
-        button:hover {
+        .purchase-button:hover {
             background: #45a049;
+        }
+
+        /* Botão "Saque" azul */
+        .withdraw-button {
+            background: #1E90FF; /* Azul */
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .withdraw-button:hover {
+            background: #1C86EE; /* Azul mais escuro */
+        }
+
+        /* Botão "Plano Vermelho" */
+        .plan-red-button {
+            background: #FF6347; /* Vermelho */
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .plan-red-button:hover {
+            background: #D32F2F; /* Vermelho escuro */
         }
 
         .qrcode-container {
@@ -134,11 +157,15 @@
     <div class="form-container">
         <label for="amount">Digite o valor da transação (em USD):</label>
         <input type="number" id="amount" placeholder="Ex: 10" value="10" /> <!-- Valor inicial ajustado para 10 dólares -->
-        <button onclick="payWithMetaMask()">Cobrar via MetaMask</button>
+        
+        <!-- Botão de Compra (Verde) -->
+        <button class="purchase-button" onclick="payWithMetaMask()">Cobrar via MetaMask</button>
 
-        <button class="billing-option" onclick="selectBillingCycle()">Escolha o Ciclo de Cobrança</button>
+        <!-- Botão de Plano Vermelho -->
+        <button class="plan-red-button" onclick="selectBillingCycle()">Plano Vermelho</button>
 
-        <button class="withdraw-option" onclick="automatedWithdraw()">Saque Automatizado</button> <!-- Botão de saque amarelo -->
+        <!-- Botão de Saque (Azul) -->
+        <button class="withdraw-button" onclick="automatedWithdraw()">Saque Automatizado</button> <!-- Botão de saque azul -->
 
         <div id="alert" class="alert" style="display: none;"></div>
 
