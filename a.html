@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D-Dark</title>
+    <link rel="icon" href="/a.ico" type="image/x-icon"> <!-- Ícone acessível no caminho correto -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #001f3d, #003366); /* Degrade azul mais real */
+            color: #FFD700; /* Texto amarelo */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #FFD700; /* Título em amarelo */
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-container {
+            background: rgba(0, 0, 0, 0.8); /* Fundo escuro com transparência */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #FFD700;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        input {
+            background: #2C2C2C;
+            color: #fff;
+            border: 1px solid #FFD700;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #FF6347; /* Foco vermelho */
+        }
+
+        .metamask-button {
+            background: #f44336; /* Vermelho */
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .metamask-button:hover {
+            background: #d32f2f; /* Vermelho escuro */
+        }
+
+        button {
+            background: #4CAF50; /* Verde */
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .qrcode-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .qrcode-container canvas {
+            max-width: 100%;
+            width: 250px;
+        }
+
+        .alert {
+            background: rgba(255, 99, 71, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .alert.success {
+            background: rgba(50, 205, 50, 0.9);
+        }
+
+        .alert.error {
+            background: rgba(255, 99, 71, 0.9);
+        }
+
+        .billing-option {
+            background: #f44336; /* Botão vermelho */
+            color: #fff;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .billing-option:hover {
+            background: #d32f2f; /* Vermelho escuro */
+        }
+    </style>
+</head>
+<body>
+    <h1>D-Dark</h1> <!-- Título alterado para D-Dark -->
+    <div class="form-container">
+        <label for="amount">Digite o valor da transação (em USD):</label>
+        <input type="number" id="amount" placeholder="Ex: 10" value="10" /> <!-- Valor inicial ajustado para 10 dólares -->
+        <button onclick="payWithMetaMask()">Cobrar via MetaMask</button>
+
+        <button class="billing-option" onclick="selectBillingCycle()">Escolha o Ciclo de Cobrança</button>
+
+        <div id="alert" class="alert" style="display: none;"></div>
+
+        <div id="qrcode" class="qrcode-container"></div>
+    </div>
+
+    <script>
+        const pixKey = "11958849894"; // Chave PIX Santander - PRIVADA
+        const bankName = "Santander";
+        const receiverWalletAddress = "0xSeuEnderecoWalletAqui"; // Substitua pelo endereço Ethereum do recebedor
+
+        async function payWithMetaMask() {
+            try {
+                if (!window.ethereum) {
+                    alert("MetaMask não encontrada! Por favor, instale a extensão.");
+                    return;
+                }
+
+                const amount = parseFloat(document.getElementById("amount").value);
+                if (isNaN(amount) || amount <= 0) {
+                    showAlert("Por favor, insira um valor válido.", "error");
+                    return;
+                }
+
+                const fee = (amount * 0.02).toFixed(2);
+                const totalInEth = ((amount - fee) / 2000).toFixed(6); // Supondo 1 ETH = 2000 USD
+
+                // Solicita conexão com a carteira
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+
+                // Realiza a transação
+                const tx = await signer.sendTransaction({
+                    to: receiverWalletAddress,
+                    value: ethers.utils.parseEther(totalInEth),
+                });
+
+                showAlert(`Transação enviada com sucesso! Hash: ${tx.hash}`, "success");
+            } catch (error) {
+                console.error(error);
+                showAlert("Erro ao realizar a transação via MetaMask.", "error");
+            }
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.innerText = message;
+            alert.style.display = 'block';
+            alert.className = `alert ${type}`;
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function selectBillingCycle() {
+            const cycle = prompt("Escolha o ciclo de cobrança:\n1. Semanal\n2. Mensal\n3. Anual\n4. Vitalício", "Mensal");
+
+            if (cycle) {
+                let cycleMessage = "";
+                switch(cycle.toLowerCase()) {
+                    case "semanal":
+                        cycleMessage = "Cobrança Semanal selecionada.";
+                        break;
+                    case "mensal":
+                        cycleMessage = "Cobrança Mensal selecionada.";
+                        break;
+                    case "anual":
+                        cycleMessage = "Cobrança Anual selecionada.";
+                        break;
+                    case "vitalício":
+                        cycleMessage = "Cobrança Vitalícia selecionada.";
+                        break;
+                    default:
+                        cycleMessage = "Opção inválida! Selecione uma opção válida.";
+                        break;
+                }
+                showAlert(cycleMessage, "success");
+            }
+        }
+    </script>
+</body>
+</html>
